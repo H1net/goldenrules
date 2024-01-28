@@ -3,6 +3,7 @@ import sys
 
 from PyQt6.QtWidgets import (
   QApplication,
+  QVBoxLayout,
   QHBoxLayout,
   QWidget
 )
@@ -14,6 +15,25 @@ def get_checks():
     checks = pd.read_csv('data/checks.csv')
     return checks
 
+
+def get_view():
+    # Create a QWebEngineView object
+    view = QWebEngineView()
+    # Convert markdown to HTML
+    md_text = """
+    # GR Reverts
+
+    This is some **markdown** text.
+    """
+
+    # md_text+= checks.head().to_string()
+
+    html = markdown(md_text)
+
+    # Set the HTML in the browser widget
+    view.setHtml(html)
+    return view
+
 class Window(QWidget):
     def __init__(self):
         super().__init__()
@@ -21,30 +41,24 @@ class Window(QWidget):
         # self.resize(800, 600)
 
         # Create a top-level layout
-        layout = QHBoxLayout()
+        layout = QVBoxLayout()
+
+        # Create filter bar
+        layoutHeader = QHBoxLayout()
+
+        # Create filter bar
+        layoutFooter = QHBoxLayout()
 
         # Create a QWebEngineView object
-        view = QWebEngineView()
+        view = get_view()
 
         # Add the QWebEngineView object to the layout
+        layout.addLayout(layoutHeader)
         layout.addWidget(view)
+        layout.addLayout(layoutFooter)
 
         # Set the layout of the application
         self.setLayout(layout)
-
-        # Convert markdown to HTML
-        md_text = """
-        # GR Reverts
-
-        This is some **markdown** text.
-        """
-
-        # md_text+= checks.head().to_string()
-
-        html = markdown(md_text)
-
-        # Set the HTML in the browser widget
-        view.setHtml(html)
 
 def main():
     app = QApplication(sys.argv)
