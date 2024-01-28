@@ -5,8 +5,10 @@ from PyQt6.QtWidgets import (
   QApplication,
   QVBoxLayout,
   QHBoxLayout,
-  QWidget
+  QWidget,
+  QTableView
 )
+from PyQt6.QtCore import QAbstractTableModel, Qt  # Changed this line
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from markdown import markdown as markdown
 
@@ -15,50 +17,49 @@ def get_checks():
     checks = pd.read_csv('data/checks.csv')
     return checks
 
+class PandasModel(QAbstractTableModel):
+    def __init__(self, df, parent=None):
+        QAbstractTableModel.__init__(self, parent)
+        self._df = df
 
-def get_view():
-    # Create a QWebEngineView object
-    view = QWebEngineView()
-    # Convert markdown to HTML
-    md_text = """
-    # GR Reverts
+    def rowCount(self, parent=None):
+        return self._df.shape[0]
 
-    This is some **markdown** text.
-    """
-    checks = get_checks()
-    md_text += '\n' + checks.head().to_markdown()
+    def columnCount(self, parent=None):
+        return self._df.shape[1]
 
-    html = markdown(md_text)
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):  # Changed this line
+        if index.isValid():
+            if role == Qt.ItemDataRole.DisplayRole:  # Changed this line
+                return str(self._df.iloc[index.row(), index.column()])
+        return None
 
-    # Set the HTML in the browser widget
-    view.setHtml(html)
-    return view
+    def headerData(self, section, orientation, role):
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:  # Changed this line
+            return self._df.columns[section]
+        return None
 
 class Window(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("GR Reverts")
-        # self.resize(800, 600)
+        self.resize(800, 600)
 
         # Create a top-level layout
         layout = QVBoxLayout()
-
-        # Create filter bar
-        layoutHeader = QHBoxLayout()
-
-        # Create filter bar
-        layoutFooter = QHBoxLayout()
-
-        # Create a QWebEngineView object
-        view = get_view()
-
-        # Add the QWebEngineView object to the layout
-        layout.addLayout(layoutHeader)
-        layout.addWidget(view)
-        layout.addLayout(layoutFooter)
-
-        # Set the layout of the application
         self.setLayout(layout)
+
+        # Create a QTableView and set its model
+        self.tableView = QTableView()
+        checks = get_checks()
+        model = PandasModel(checks)
+        self.tableView.setModel(model)
+
+        # Add the QTableView to the layout
+        layout.addWidget(self.tableView)
+
+        # Set the main window's properties
+        self.showMaximized()
 
 def main():
     app = QApplication(sys.argv)
