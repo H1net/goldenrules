@@ -25,8 +25,8 @@ def get_view():
 
     This is some **markdown** text.
     """
-
-    # md_text+= checks.head().to_string()
+    checks = get_checks()
+    md_text += '\n' + checks.head().to_markdown()
 
     html = markdown(md_text)
 
