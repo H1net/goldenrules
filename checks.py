@@ -3,33 +3,34 @@ import pandas as pd
 # load the data
 checks = pd.read_csv('data/checks.csv')
 
-from PyQt6.QtWidgets import QApplication, QTextBrowser
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWebEngineWidgets import QWebEngineView
 from markdown import markdown as md
 import sys
 
 def main():
     app = QApplication(sys.argv)
 
-    browser = QTextBrowser()
-    browser.setOpenExternalLinks(True)
+    view = QWebEngineView()
 
     # Set the window title
-    browser.setWindowTitle("GR Reverts")
+    view.setWindowTitle("GR Reverts")
 
     # Convert markdown to HTML
     md_text = """
     # GR Reverts
 
     This is some **markdown** text.
-
-
     """
+
+    md_text+= checks.head().to_string()
+
     html = md(md_text)
 
     # Set the HTML in the browser widget
-    browser.setHtml(html)
+    view.setHtml(html)
 
-    browser.show()
+    view.show()
 
     sys.exit(app.exec())
 
